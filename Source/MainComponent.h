@@ -2,63 +2,63 @@
 #ifndef MAINCOMPONENT_H_INCLUDED
 #define MAINCOMPONENT_H_INCLUDED
 
-
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "JDockableWindows.h"
 #include "JAdvancedDock.h"
 
-
-/**
-A really simple component we can use to test the dragging and docking.
-*/
-class ExampleDockableComponent
-	:
-	public Component
+namespace jcredland
 {
-public:
-	ExampleDockableComponent(const String & componentName, const Colour & colour_)
-		:
-		colour(colour_)
+	/// <summary>
+	/// A really simple component we can use to test the dragging and docking.
+	/// </summary>
+	class ExampleDockableComponent : public juce::Component
 	{
-		Component::setName(componentName);
-	}
+	public:
+		ExampleDockableComponent(const juce::String & componentName, const juce::Colour & colour_)
+			: colour(colour_)
+		{
+			juce::Component::setName(componentName);
+		}
 
-	~ExampleDockableComponent()
+		~ExampleDockableComponent()
+		{
+			jassertfalse;
+		}
+
+		void paint(juce::Graphics & g) override
+		{
+			g.fillAll(colour);
+			g.setColour(juce::Colours::white);
+			g.drawText("Window Content", getLocalBounds(), juce::Justification::centred, false);
+		}
+
+	private:
+		juce::Colour colour;
+	};
+
+
+
+	class MainContentComponent : public juce::Component
 	{
-		jassertfalse;
-	}
+	public:
+		//==============================================================================
+		MainContentComponent();
+		~MainContentComponent();
 
-	void paint(Graphics & g) override
-	{
-		g.fillAll(colour);
-		g.setColour(Colours::white);
-		g.drawText("Window Content", getLocalBounds(), Justification::centred, false);
-	}
+		void paint(juce::Graphics&) override;
+		void resized() override;
 
-private:
-	Colour colour;
-};
+	private:
+		DockableWindowManager dockManager;
+		WindowDockVertical dock{ dockManager };
+		TabDock tabDock{ dockManager };
+		JAdvancedDock advancedDock{ dockManager };
+
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainContentComponent)
+	};
 
 
-
-class MainContentComponent : public Component
-{
-public:
-	//==============================================================================
-	MainContentComponent();
-	~MainContentComponent();
-
-	void paint(Graphics&) override;
-	void resized() override;
-
-private:
-	DockableWindowManager dockManager;
-	WindowDockVertical dock { dockManager };
-	TabDock tabDock { dockManager };
-	JAdvancedDock advancedDock{ dockManager };
-
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainContentComponent)
-};
+}
 
 
 #endif  // MAINCOMPONENT_H_INCLUDED

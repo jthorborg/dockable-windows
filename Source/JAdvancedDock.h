@@ -14,87 +14,91 @@
 
 #include "JDockableWindows.h"
 
-namespace AdvancedDockPlaces
+namespace jcredland
 {
-	enum Places
+	namespace AdvancedDockPlaces
 	{
-		top, left, right, bottom, centre,
-		none
-	};
-};
-
-class AdvancedDockPlacementDialog;
-
-/**
-The advanced dock allows vertical and horizontal splits, as well as tabs.
-*/
-class JAdvancedDock
-	:
-	public Component,
-	DockBase
-{
-public:
-	JAdvancedDock(DockableWindowManager& manager_);
-
-	~JAdvancedDock();;
-
-    /** Adds a component to the dock so it's visible to the user.
-     
-     We assume you are managing the components lifetime.  However an optional 
-     change could be to have the DockManager manage them.
-     */
-    void addComponentToDock(Component * component);
-    
-    /** Adds a component to the dock so it's visible to the user.
-     
-     @param rowPosition - where to insert the new row.  If rowPosition is -1 it
-     will be inserted at the bottom. Rows are numbered from the top down.  A row 
-     position of 0 will insert the component at the top. */
-    void addComponentToNewRow(Component * component, int rowPosition);
-
-    
-	void resized() override;
-	void paint(Graphics& g) override;
-
-private:
-	struct WindowLocation
-	{
-		WindowLocation(int y, int x, int t);
-		int y{ 0 };
-		int x{ 0 };
-		int tab{ 0 };
+		enum Places
+		{
+			top, left, right, bottom, centre,
+			none
+		};
 	};
 
-	WindowLocation getWindowLocationAtPoint(const Point<int>& screenPosition);
-	Rectangle<int> getWindowBoundsAtPoint(const Point<int>& p);
+	class AdvancedDockPlacementDialog;
+
 	/**
-	Insert a new window in to the right place in our dock...
+	The advanced dock allows vertical and horizontal splits, as well as tabs.
 	*/
-	void insertWindow(const Point<int>& screenPos, AdvancedDockPlaces::Places places, DockableComponentWrapper* comp);
+	class JAdvancedDock
+		: public juce::Component
+		, DockBase
+	{
+	public:
+		JAdvancedDock(DockableWindowManager& manager_);
 
-	void showDockableComponentPlacement(DockableComponentWrapper* component, Point<int> screenPosition) override;
-	void hideDockableComponentPlacement() override;
-	void startDockableComponentDrag(DockableComponentWrapper* component) override;
-	void insertNewDock(DockableComponentWrapper* comp, JAdvancedDock::WindowLocation loc);
-	void insertNewRow(DockableComponentWrapper* comp, JAdvancedDock::WindowLocation loc);
-	void insertToNewTab(DockableComponentWrapper* comp, JAdvancedDock::WindowLocation loc);
-	bool attachDockableComponent(DockableComponentWrapper* component, Point<int> screenPosition) override;
-	void detachDockableComponent(DockableComponentWrapper* component) override;
-	void revealComponent(DockableComponentWrapper* dockableComponent) override;
+		~JAdvancedDock();;
+
+		/** Adds a component to the dock so it's visible to the user.
+
+		We assume you are managing the components lifetime.  However an optional
+		change could be to have the DockManager manage them.
+		*/
+		void addComponentToDock(juce::Component * component);
+
+		/** Adds a component to the dock so it's visible to the user.
+
+		@param rowPosition - where to insert the new row.  If rowPosition is -1 it
+		will be inserted at the bottom. Rows are numbered from the top down.  A row
+		position of 0 will insert the component at the top. */
+		void addComponentToNewRow(juce::Component * component, int rowPosition);
 
 
-	class RowType;
+		void resized() override;
+		void paint(juce::Graphics& g) override;
 
-	std::vector<RowType> rows;
-	std::vector<std::unique_ptr<StretchableLayoutResizerBar>> resizers;
-	StretchableLayoutManager layout;
+	private:
+		struct WindowLocation
+		{
+			WindowLocation(int y, int x, int t);
+			int y{ 0 };
+			int x{ 0 };
+			int tab{ 0 };
+		};
 
-	void rebuildRowResizers();
-	void layoutRows(const Rectangle<int>& area);
+		WindowLocation getWindowLocationAtPoint(const juce::Point<int>& screenPosition);
+		juce::Rectangle<int> getWindowBoundsAtPoint(const juce::Point<int>& p);
+		/**
+		Insert a new window in to the right place in our dock...
+		*/
+		void insertWindow(const juce::Point<int>& screenPos, AdvancedDockPlaces::Places places, DockableComponentWrapper* comp);
 
-    DockableWindowManager & manager;
-	ScopedPointer<AdvancedDockPlacementDialog> placementDialog;
-};
+		void showDockableComponentPlacement(DockableComponentWrapper* component, juce::Point<int> screenPosition) override;
+		void hideDockableComponentPlacement() override;
+		void startDockableComponentDrag(DockableComponentWrapper* component) override;
+		void insertNewDock(DockableComponentWrapper* comp, JAdvancedDock::WindowLocation loc);
+		void insertNewRow(DockableComponentWrapper* comp, JAdvancedDock::WindowLocation loc);
+		void insertToNewTab(DockableComponentWrapper* comp, JAdvancedDock::WindowLocation loc);
+		bool attachDockableComponent(DockableComponentWrapper* component, juce::Point<int> screenPosition) override;
+		void detachDockableComponent(DockableComponentWrapper* component) override;
+		void revealComponent(DockableComponentWrapper* dockableComponent) override;
+
+
+		class RowType;
+
+		std::vector<RowType> rows;
+		std::vector<std::unique_ptr<juce::StretchableLayoutResizerBar>> resizers;
+		juce::StretchableLayoutManager layout;
+
+		void rebuildRowResizers();
+		void layoutRows(const juce::Rectangle<int>& area);
+
+		DockableWindowManager & manager;
+		juce::ScopedPointer<AdvancedDockPlacementDialog> placementDialog;
+	};
+
+}
+
 
 
 #endif  // ADVANCEDDOCK_H_INCLUDED

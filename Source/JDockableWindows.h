@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    DockableWindows.h
-    Created: 6 Jul 2016 10:27:19pm
-    Author:  jim
+	DockableWindows.h
+	Created: 6 Jul 2016 10:27:19pm
+	Author:  jim
 
   ==============================================================================
 */
@@ -14,400 +14,399 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class DockableWindowManager;
-class DockableComponentWrapper;
-
-/**
-Base for things that can act as docks for DockableComponents
-*/
-class DockBase
+namespace jcredland
 {
-public:
-	DockBase(DockableWindowManager & manager_, Component * dockComponent);
-
-	virtual ~DockBase();
-	/**
-	Called when the user is dragging over the dock.  This should do something to highlight where the
-	component may be placed, or do nothing if the component cannot be placed here.
-	*/
-	virtual void showDockableComponentPlacement(DockableComponentWrapper* component, Point<int> screenPosition) = 0;
-	/**
-	Called when the dragging has stopped or moved away from the component and we don't need to show
-	the highlighted position any more.
-	*/
-	virtual void hideDockableComponentPlacement() = 0;
-	/**
-	Mark or otherwise show that the component is being moved from the dock.    E.g. by making the component
-	grey or invisible.   If the user decides not to drag the component after all attachDockableComponent
-	will be called.
-	*/
-	virtual void startDockableComponentDrag(DockableComponentWrapper* component) = 0;
-	/**
-	Called when the user drags a window over the dock and releases the mouse, use this to place the
-	window into the dock.  Return false if the DockableComponentWrapper cannot be added, and a new window will be
-	created instead.
-	*/
-	virtual bool attachDockableComponent(DockableComponentWrapper* component, Point<int> screenPosition) = 0;
-	/**
-	Should remove the component from the dock if it's present, and resize or rearrange any other windows
-	accordingly.
-	*/
-	virtual void detachDockableComponent(DockableComponentWrapper* component) = 0;
+	class DockableWindowManager;
+	class DockableComponentWrapper;
 
 	/**
-	Tests to see if this Dock contains the provided screen position.  Used internally
-	while drags are in progress.
+	Base for things that can act as docks for DockableComponents
 	*/
-	bool containsScreenPosition(const Point<int>& screenPosition) const;
-
-	bool isUsingComponent(Component * c) const { return dockComponent == c; }
-
-	/**
-	Your dock should implement this to enable components to be revealed and/or moved to the front.
-	*/
-	virtual void revealComponent(DockableComponentWrapper* /*dockableComponent*/) {}
-private:
-	DockableWindowManager & manager;
-	Component* dockComponent;
-};
-
-/**
-The DockableWindowManager controls the attaching and removing of DockableWindow objects from DockBase
-implementations and top level windows.
-*/
-class DockableWindowManager
-{
-public:
-	DockableWindowManager();
-
-	class TransparentDragImageWindow
-		:
-		public TopLevelWindow
+	class DockBase
 	{
 	public:
-		TransparentDragImageWindow(Image imageForDraggingWindow);
-		void paint(Graphics& g) override;
-		Image image;
+		DockBase(DockableWindowManager & manager_, juce::Component * dockComponent);
+
+		virtual ~DockBase();
+		/**
+		Called when the user is dragging over the dock.  This should do something to highlight where the
+		component may be placed, or do nothing if the component cannot be placed here.
+		*/
+		virtual void showDockableComponentPlacement(DockableComponentWrapper* component, juce::Point<int> screenPosition) = 0;
+		/**
+		Called when the dragging has stopped or moved away from the component and we don't need to show
+		the highlighted position any more.
+		*/
+		virtual void hideDockableComponentPlacement() = 0;
+		/**
+		Mark or otherwise show that the component is being moved from the dock.    E.g. by making the component
+		grey or invisible.   If the user decides not to drag the component after all attachDockableComponent
+		will be called.
+		*/
+		virtual void startDockableComponentDrag(DockableComponentWrapper* component) = 0;
+		/**
+		Called when the user drags a window over the dock and releases the mouse, use this to place the
+		window into the dock.  Return false if the DockableComponentWrapper cannot be added, and a new window will be
+		created instead.
+		*/
+		virtual bool attachDockableComponent(DockableComponentWrapper* component, juce::Point<int> screenPosition) = 0;
+		/**
+		Should remove the component from the dock if it's present, and resize or rearrange any other windows
+		accordingly.
+		*/
+		virtual void detachDockableComponent(DockableComponentWrapper* component) = 0;
+
+		/**
+		Tests to see if this Dock contains the provided screen position.  Used internally
+		while drags are in progress.
+		*/
+		bool containsScreenPosition(const juce::Point<int>& screenPosition) const;
+
+		bool isUsingComponent(juce::Component * c) const { return dockComponent == c; }
+
+		/**
+		Your dock should implement this to enable components to be revealed and/or moved to the front.
+		*/
+		virtual void revealComponent(DockableComponentWrapper* /*dockableComponent*/) {}
+	private:
+		DockableWindowManager & manager;
+		juce::Component* dockComponent;
 	};
 
 	/**
-	Shows an outline of the component while it's being dragged, and highlight any
-	docks the component is dragged over.
+	The DockableWindowManager controls the attaching and removing of DockableWindow objects from DockBase
+	implementations and top level windows.
 	*/
-	void handleComponentDrag(DockableComponentWrapper *, Point<int> location, int w, int h);
-
-	/**
-	Removes the outline when the mouse is released.
-	*/
-	void clearTargetPosition();
-
-	/**
-	Removes the component from it's parent, prior to rehoming it.
-	*/
-	void divorceComponentFromParent(DockableComponentWrapper* component);
-
-	/**
-	Returns the dock under the provided screen position, if there is no
-	dock returns nullptr.
-
-	@note may return the wrong result if there are overlapping docks.
-	*/
-	DockBase* getDockUnderScreenPosition(Point<int> position);
-
-	/**
-	Called to put a component in new screen position.  Assesses whether this is
-	a dock, a tab or a top level window and attaches the window to the new
-	component.
-	*/
-	void handleComponentDragEnd(DockableComponentWrapper* component, const Point<int> & screenPosition);
-
-	/**
-	Creates a DockableComponentWrapper.  Use this when writing docks to encapsulate components you are adding
-	to the docking window system.
-	*/
-	DockableComponentWrapper* createDockableComponent(Component* component);
-
-	/**
-	Returns the DockBase object with a Dock component of 'component'.  Note that this is the
-	dock's component.  This isn't a way of directly finding the Dock holding your 
-	DockableComponentWrapper.
-	*/
-	DockBase* getDockWithComponent(Component* component) const;
-
-	/**
-	Brings a specific DockableComponentWrapper to the front of any tabbed docks.
-	*/
-	void bringDockableComponentToFront(DockableComponentWrapper* dockableComponent);
-	/**
-	 * Reveals a specific component on the script. 
-	 */
-	void bringComponentToFront(Component* component);
-
-	/**
-	Remove and delete a dockable component wrapper.
-	*/
-	void deleteDockableComponent(DockableComponentWrapper* dockableComponentWrapper);
-private:
-	friend class DockBase;
-	void addDock(DockBase* newDock);
-	void removeDock(DockBase* dockToRemove);
-
-	void createHeavyWeightWindow(DockableComponentWrapper * comp, const Point<int> & screenPosition);
-
-	/** All the DockableComponentWrapper windows we have on the desktop */
-	OwnedArray<ResizableWindow> windows;
-
-	/** All the dockable component wrappers we have.. */
-	OwnedArray<DockableComponentWrapper> dockableComponents;
-
-	/** The floating window currently being dragged. */
-	ScopedPointer<TransparentDragImageWindow> transparentDragImageWindow;
-
-	/** And all the docks ... */
-	Array<DockBase *> docks;
-
-	ComponentBoundsConstrainer basicConstrainer;
-	DockBase * highlightedDock{ nullptr };
-	Component * currentlyDraggedComponent{ nullptr };
-
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableWindowManager)
-};
-
-
-class DockableComponentTitleBar;
-class DockableComponentTab;
-
-/**
-All components displayed by the dockable window system have a DockableComponentWrapper as 
-their parent.  You do not normally directly interact with DockableComponentWrapper 
-components.  Instead add your computer using the add method on a dock.
-*/
-class DockableComponentWrapper
-	:
-	public Component,
-	public ComponentListener
-{
-public:
-	DockableComponentWrapper(DockableWindowManager &);
-	DockableComponentWrapper(DockableWindowManager &, Component * contentComponentUnowned);
-	~DockableComponentWrapper();
-
-	void setContentComponentUnowned(Component* content);
-
-	/**
-	This should be somewhere else so the user can do a nice override, maybe it should
-	be a feature of the DockableWindowManager
-	*/
-	String getWindowTitle() const
+	class DockableWindowManager
 	{
-		if (contentComponent)
-			return contentComponent->getName();
+	public:
+		DockableWindowManager();
 
-		return String::empty;
-	}
+		class TransparentDragImageWindow : public juce::TopLevelWindow
+		{
+		public:
+			TransparentDragImageWindow(juce::Image imageForDraggingWindow);
+			void paint(juce::Graphics& g) override;
+			juce::Image image;
+		};
 
-	void resized() override;
+		/**
+		Shows an outline of the component while it's being dragged, and highlight any
+		docks the component is dragged over.
+		*/
+		void handleComponentDrag(DockableComponentWrapper *, juce::Point<int> location, int w, int h);
 
-	/**
-	Docks should review the tab sizes and make a decision about whether the tabs can have their
-	ideal size or whether they need to compress the sizes to allow all the tabs to fit on the screen.
+		/**
+		Removes the outline when the mouse is released.
+		*/
+		void clearTargetPosition();
 
-	@see setTabWidth
-	*/
-	int getIdealTabWidth() const;
+		/**
+		Removes the component from it's parent, prior to rehoming it.
+		*/
+		void divorceComponentFromParent(DockableComponentWrapper* component);
 
-	/** @see getIdealTabWidth */
-	void setTabWidth(int tabWidth);
+		/**
+		Returns the dock under the provided screen position, if there is no
+		dock returns nullptr.
 
-	/** @see getIdealTabWidth */
-	int getTabWidth();
+		@note may return the wrong result if there are overlapping docks.
+		*/
+		DockBase* getDockUnderScreenPosition(juce::Point<int> position);
 
-	/**
-	If the component is in a dock this returns the dock it's in.  If it's not in a dock,
-	or it's a stand alone window this returns nullptr.
-	*/
-	DockBase* getCurrentDock() const;
+		/**
+		Called to put a component in new screen position.  Assesses whether this is
+		a dock, a tab or a top level window and attaches the window to the new
+		component.
+		*/
+		void handleComponentDragEnd(DockableComponentWrapper* component, const juce::Point<int> & screenPosition);
 
-	/**
-	Whether the wrapper should show the tab handle at the bottom.
-	*/
-	void setShowTabButton(bool shouldShowTab, int xPosition, bool isFront);
+		/**
+		Creates a DockableComponentWrapper.  Use this when writing docks to encapsulate components you are adding
+		to the docking window system.
+		*/
+		DockableComponentWrapper* createDockableComponent(juce::Component* component);
 
-	/** @internal - callback from the Tab button */
-	void tabButtonClicked() { manager.bringDockableComponentToFront(this); }
+		/**
+		Returns the DockBase object with a Dock component of 'component'.  Note that this is the
+		dock's component.  This isn't a way of directly finding the Dock holding your
+		DockableComponentWrapper.
+		*/
+		DockBase* getDockWithComponent(juce::Component* component) const;
 
-	Rectangle<int> getTabButtonBounds() const;
+		/**
+		Brings a specific DockableComponentWrapper to the front of any tabbed docks.
+		*/
+		void bringDockableComponentToFront(DockableComponentWrapper* dockableComponent);
+		/**
+		* Reveals a specific component on the script.
+		*/
+		void bringComponentToFront(juce::Component* component);
 
-	void componentBeingDeleted(Component&) override;
+		/**
+		Remove and delete a dockable component wrapper.
+		*/
+		void deleteDockableComponent(DockableComponentWrapper* dockableComponentWrapper);
+	private:
+		friend class DockBase;
+		void addDock(DockBase* newDock);
+		void removeDock(DockBase* dockToRemove);
 
-private:
-	ScopedPointer<DockableComponentTitleBar> titleBar;
-	ScopedPointer<DockableComponentTab> tabButton;
+		void createHeavyWeightWindow(DockableComponentWrapper * comp, const juce::Point<int> & screenPosition);
 
-	int tabXPosition{ 0 };
-	int tabWidthToUse{ -1 };
+		/** All the DockableComponentWrapper windows we have on the desktop */
+		juce::OwnedArray<juce::ResizableWindow> windows;
 
-	WeakReference<Component> contentComponent;
-	DockableWindowManager & manager;
+		/** All the dockable component wrappers we have.. */
+		juce::OwnedArray<DockableComponentWrapper> dockableComponents;
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableComponentWrapper)
-};
+		/** The floating window currently being dragged. */
+		juce::ScopedPointer<TransparentDragImageWindow> transparentDragImageWindow;
 
-/**
-Provides drag and drop features for DockableWindows widgets that can be used for
-moving the windows around.
-*/
-class DockableComponentDraggable
-	:
-	public Component
-{
-public:
-	DockableComponentDraggable(DockableComponentWrapper& owner_, DockableWindowManager& manager_);
-	void mouseDrag(const MouseEvent& e) override;
-	void mouseUp(const MouseEvent& e) override;
-	void mouseDown(const MouseEvent& e) override;
-	DockableComponentWrapper & getDockableComponent() const { return owner; }
-	bool isDragging() const { return dragging; }
-private:
-	Point<int> offset;
-	bool dragging{ false };
-	DockableComponentWrapper & owner;
-	DockableWindowManager & manager;
-};
+		/** And all the docks ... */
+		juce::Array<DockBase *> docks;
 
-/**
-Title bar that implements the drag and drop functions.
-*/
-class DockableComponentTitleBar
-	:
-	public DockableComponentDraggable
-{
-public:
-	DockableComponentTitleBar(DockableComponentWrapper& owner_, DockableWindowManager& manager_);
-	void paint(Graphics& g) override;
-};
+		juce::ComponentBoundsConstrainer basicConstrainer;
+		DockBase * highlightedDock{ nullptr };
+		juce::Component * currentlyDraggedComponent{ nullptr };
 
-/**
-Tab that implements the drag and drop functions.
-*/
-class DockableComponentTab
-	:
-	public DockableComponentDraggable
-{
-public:
-	DockableComponentTab(DockableComponentWrapper& owner_, DockableWindowManager& manager_);
-
-	/**
-	Return the width required for rendering the table.  There's no guarantee that this
-	sized space will actully be available though.  So the paint will need to cope with
-	smaller sizes.
-	*/
-	virtual int getIdealWidth();
-
-	/**
-	Returns true if this tab is showing at the front of the stack of tabs.  The paint
-	routine should probably call this to find out if it needs to render the tab differently.
-	*/
-	bool isFrontTab() const { return frontTab; }
-
-	/**
-	@internal: Called internally to set the frontTab flag.
-	*/
-	void setIsFrontTab(bool nowFrontTab);
-
-	void mouseUp(const MouseEvent& e) override;
-private:
-	void paint(Graphics& g) override;
-	bool frontTab{ false };
-};
-
-/**
-A simple example dock.  This lets you put an arbitray number of Components in a vertical stack.  The 
-windows are sized to fit the available space. 
-*/
-class WindowDockVertical
-	:
-	public Component,
-	DockBase
-{
-public:
-	WindowDockVertical(DockableWindowManager& manager_);
-
-	~WindowDockVertical();
-
-	/**
-	We assume you are managing the components lifetime.  However an optional change could be to have the
-	DockManager manage them.
-	*/
-	void addComponentToDock(Component* comp);
-
-	void resized() override;
-	void paint(Graphics& g) override;
-	void paintOverChildren(Graphics& g) override;
-
-private:
-	struct PlacementPosition
-	{
-		int yPosition;
-		int insertAfterComponentIndex;
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableWindowManager)
 	};
 
-	/** Finds the nearest top or bottom edge of an existing component to the mouse Y position */
-	PlacementPosition getPlacementPositionForPoint(Point<int> pointRelativeToComponent) const;
 
-	void startDockableComponentDrag(DockableComponentWrapper* component) override;
-	void showDockableComponentPlacement(DockableComponentWrapper* component, Point<int> screenPosition) override;
-	bool attachDockableComponent(DockableComponentWrapper* component, Point<int> screenPosition) override;
-	void detachDockableComponent(DockableComponentWrapper* component) override;
-	void hideDockableComponentPlacement() override;
+	class DockableComponentTitleBar;
+	class DockableComponentTab;
 
-	bool highlight{ false };
-	int highlightYPosition{ 0 };
-
-	Array<DockableComponentWrapper *> dockableComponentWrappers;
-	DockableWindowManager & manager;
-};
-
-/**
-Displays a number of components on top of each other in a tab-stylee!
-*/
-class TabDock
-	:
-	public Component,
-	DockBase
-{
-public:
-	TabDock(DockableWindowManager& manager_);
-	void addComponentToDock(Component* comp);
-	void resized() override;
-	void paintOverChildren(Graphics& g) override;
-
-private:
-	struct PlacementPosition
+	/**
+	All components displayed by the dockable window system have a DockableComponentWrapper as
+	their parent.  You do not normally directly interact with DockableComponentWrapper
+	components.  Instead add your computer using the add method on a dock.
+	*/
+	class DockableComponentWrapper
+		: public juce::Component
+		, public juce::ComponentListener
 	{
-		int xPosition;
-		int insertAfterComponentIndex;
+	public:
+		DockableComponentWrapper(DockableWindowManager &);
+		DockableComponentWrapper(DockableWindowManager &, juce::Component * contentComponentUnowned);
+		~DockableComponentWrapper();
+
+		void setContentComponentUnowned(juce::Component* content);
+
+		/**
+		This should be somewhere else so the user can do a nice override, maybe it should
+		be a feature of the DockableWindowManager
+		*/
+		juce::String getWindowTitle() const
+		{
+			if (contentComponent)
+				return contentComponent->getName();
+
+			return juce::String::empty;
+		}
+
+		void resized() override;
+
+		/**
+		Docks should review the tab sizes and make a decision about whether the tabs can have their
+		ideal size or whether they need to compress the sizes to allow all the tabs to fit on the screen.
+
+		@see setTabWidth
+		*/
+		int getIdealTabWidth() const;
+
+		/** @see getIdealTabWidth */
+		void setTabWidth(int tabWidth);
+
+		/** @see getIdealTabWidth */
+		int getTabWidth();
+
+		/**
+		If the component is in a dock this returns the dock it's in.  If it's not in a dock,
+		or it's a stand alone window this returns nullptr.
+		*/
+		DockBase* getCurrentDock() const;
+
+		/**
+		Whether the wrapper should show the tab handle at the bottom.
+		*/
+		void setShowTabButton(bool shouldShowTab, int xPosition, bool isFront);
+
+		/** @internal - callback from the Tab button */
+		void tabButtonClicked() { manager.bringDockableComponentToFront(this); }
+
+		juce::Rectangle<int> getTabButtonBounds() const;
+
+		void componentBeingDeleted(juce::Component&) override;
+
+	private:
+		juce::ScopedPointer<DockableComponentTitleBar> titleBar;
+		juce::ScopedPointer<DockableComponentTab> tabButton;
+
+		int tabXPosition{ 0 };
+		int tabWidthToUse{ -1 };
+
+		juce::WeakReference<Component> contentComponent;
+		DockableWindowManager & manager;
+
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableComponentWrapper)
 	};
 
-	/** Finds the nearest top or bottom edge of an existing component to the mouse Y position */
-	PlacementPosition getPlacementPositionForPoint(Point<int> pointRelativeToComponent) const;
+	/**
+	Provides drag and drop features for DockableWindows widgets that can be used for
+	moving the windows around.
+	*/
+	class DockableComponentDraggable
+		: public juce::Component
+	{
+	public:
+		DockableComponentDraggable(DockableComponentWrapper& owner_, DockableWindowManager& manager_);
+		void mouseDrag(const juce::MouseEvent& e) override;
+		void mouseUp(const juce::MouseEvent& e) override;
+		void mouseDown(const juce::MouseEvent& e) override;
+		DockableComponentWrapper & getDockableComponent() const { return owner; }
+		bool isDragging() const { return dragging; }
+	private:
+		juce::Point<int> offset;
+		bool dragging{ false };
+		DockableComponentWrapper & owner;
+		DockableWindowManager & manager;
+	};
 
-	/* Implementation of DockBase */
-	void startDockableComponentDrag(DockableComponentWrapper* component) override;
-	void showDockableComponentPlacement(DockableComponentWrapper* component, Point<int> screenPosition) override;
-	bool attachDockableComponent(DockableComponentWrapper* component, Point<int> screenPosition) override;
-	void detachDockableComponent(DockableComponentWrapper* component) override;
-	void hideDockableComponentPlacement() override;
-	void revealComponent(DockableComponentWrapper* dockableComponent) override;
+	/**
+	Title bar that implements the drag and drop functions.
+	*/
+	class DockableComponentTitleBar
+		:
+		public DockableComponentDraggable
+	{
+	public:
+		DockableComponentTitleBar(DockableComponentWrapper& owner_, DockableWindowManager& manager_);
+		void paint(juce::Graphics& g) override;
+	};
 
-	DockableWindowManager & manager;
+	/**
+	Tab that implements the drag and drop functions.
+	*/
+	class DockableComponentTab
+		:
+		public DockableComponentDraggable
+	{
+	public:
+		DockableComponentTab(DockableComponentWrapper& owner_, DockableWindowManager& manager_);
 
-	Array<DockableComponentWrapper *> dockedComponents;
+		/**
+		Return the width required for rendering the table.  There's no guarantee that this
+		sized space will actully be available though.  So the paint will need to cope with
+		smaller sizes.
+		*/
+		virtual int getIdealWidth();
 
-	bool highlight{ false };
-	int highlightXPosition{ 0 };
-	const int tabHeight = 16;
-};
+		/**
+		Returns true if this tab is showing at the front of the stack of tabs.  The paint
+		routine should probably call this to find out if it needs to render the tab differently.
+		*/
+		bool isFrontTab() const { return frontTab; }
+
+		/**
+		@internal: Called internally to set the frontTab flag.
+		*/
+		void setIsFrontTab(bool nowFrontTab);
+
+		void mouseUp(const juce::MouseEvent& e) override;
+	private:
+		void paint(juce::Graphics& g) override;
+		bool frontTab{ false };
+	};
+
+	/**
+	A simple example dock.  This lets you put an arbitray number of Components in a vertical stack.  The
+	windows are sized to fit the available space.
+	*/
+	class WindowDockVertical
+		: public juce::Component
+		, DockBase
+	{
+	public:
+		WindowDockVertical(DockableWindowManager& manager_);
+
+		~WindowDockVertical();
+
+		/**
+		We assume you are managing the components lifetime.  However an optional change could be to have the
+		DockManager manage them.
+		*/
+		void addComponentToDock(juce::Component* comp);
+
+		void resized() override;
+		void paint(juce::Graphics& g) override;
+		void paintOverChildren(juce::Graphics& g) override;
+
+	private:
+		struct PlacementPosition
+		{
+			int yPosition;
+			int insertAfterComponentIndex;
+		};
+
+		/** Finds the nearest top or bottom edge of an existing component to the mouse Y position */
+		PlacementPosition getPlacementPositionForPoint(juce::Point<int> pointRelativeToComponent) const;
+
+		void startDockableComponentDrag(DockableComponentWrapper* component) override;
+		void showDockableComponentPlacement(DockableComponentWrapper* component, juce::Point<int> screenPosition) override;
+		bool attachDockableComponent(DockableComponentWrapper* component, juce::Point<int> screenPosition) override;
+		void detachDockableComponent(DockableComponentWrapper* component) override;
+		void hideDockableComponentPlacement() override;
+
+		bool highlight{ false };
+		int highlightYPosition{ 0 };
+
+		juce::Array<DockableComponentWrapper *> dockableComponentWrappers;
+		DockableWindowManager & manager;
+	};
+
+	/**
+	Displays a number of components on top of each other in a tab-stylee!
+	*/
+	class TabDock
+		: public juce::Component
+		, DockBase
+	{
+	public:
+		TabDock(DockableWindowManager& manager_);
+		void addComponentToDock(juce::Component* comp);
+		void resized() override;
+		void paintOverChildren(juce::Graphics& g) override;
+
+	private:
+		struct PlacementPosition
+		{
+			int xPosition;
+			int insertAfterComponentIndex;
+		};
+
+		/** Finds the nearest top or bottom edge of an existing component to the mouse Y position */
+		PlacementPosition getPlacementPositionForPoint(juce::Point<int> pointRelativeToComponent) const;
+
+		/* Implementation of DockBase */
+		void startDockableComponentDrag(DockableComponentWrapper* component) override;
+		void showDockableComponentPlacement(DockableComponentWrapper* component, juce::Point<int> screenPosition) override;
+		bool attachDockableComponent(DockableComponentWrapper* component, juce::Point<int> screenPosition) override;
+		void detachDockableComponent(DockableComponentWrapper* component) override;
+		void hideDockableComponentPlacement() override;
+		void revealComponent(DockableComponentWrapper* dockableComponent) override;
+
+		DockableWindowManager & manager;
+
+		juce::Array<DockableComponentWrapper *> dockedComponents;
+
+		bool highlight{ false };
+		int highlightXPosition{ 0 };
+		const int tabHeight = 16;
+	};
+
+}
+
 
 
 
