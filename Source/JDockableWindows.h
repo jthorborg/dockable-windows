@@ -239,6 +239,8 @@ namespace jcredland
 
 		void componentBeingDeleted(juce::Component&) override;
 
+		juce::Component* getContent();
+
 	private:
 		juce::ScopedPointer<DockableComponentTitleBar> titleBar;
 		juce::ScopedPointer<DockableComponentTab> tabButton;

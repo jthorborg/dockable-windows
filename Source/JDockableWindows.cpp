@@ -354,6 +354,11 @@ namespace jcredland
 		manager.deleteDockableComponent(this);
 	}
 
+	juce::Component * DockableComponentWrapper::getContent()
+	{
+		return contentComponent.get();
+	}
+
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
 	DockableComponentDraggable::DockableComponentDraggable(DockableComponentWrapper& owner_, DockableWindowManager& manager_) :
@@ -599,6 +604,11 @@ namespace jcredland
 
 		for (auto& dockedCompWrapper : dockedComponents)
 		{
+			bool isSelectedTab = dockedCompWrapper == lastComponent;
+
+			if (auto content = dockedCompWrapper->getContent())
+				content->setVisible(isSelectedTab);
+
 			if (dockedCompWrapper->isVisible())
 			{
 				dockedCompWrapper->setBounds(area);
@@ -619,6 +629,9 @@ namespace jcredland
 
 	void TabDock::revealComponent(DockableComponentWrapper* dockableComponent)
 	{
+		if (!dockableComponent)
+			return;
+
 		dockableComponent->toFront(false);
 		resized();
 	}
@@ -685,6 +698,9 @@ namespace jcredland
 		removeChildComponent(component);
 		dockedComponents.removeAllInstancesOf(component);
 		resized();
+
+		if (auto content = component->getContent())
+			content->setVisible(true);
 	}
 
 	void TabDock::hideDockableComponentPlacement()
