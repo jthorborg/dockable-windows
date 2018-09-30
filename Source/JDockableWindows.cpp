@@ -39,6 +39,8 @@ namespace jcredland
 	{
 		basicConstrainer.setMinimumWidth(100);
 		basicConstrainer.setMinimumHeight(35);
+
+		resetHeavyWeightFactory();
 	}
 
 	void DockableWindowManager::addDock(DockBase* newDock)
@@ -51,15 +53,15 @@ namespace jcredland
 		docks.removeAllInstancesOf(dockToRemove);
 	}
 
-	DockableWindowManager::TransparentDragImageWindow::TransparentDragImageWindow(Image image_) :
-		TopLevelWindow("Window Being Dragged", true), image(image_)
+	DockableWindowManager::TransparentDragImageWindow::TransparentDragImageWindow(Image image_) 
+		: TopLevelWindow("Window Being Dragged", true), image(image_)
 	{
 		setOpaque(false);
 	}
 
 	void DockableWindowManager::createHeavyWeightWindow(DockableComponentWrapper * comp, const Point<int> &screenPosition)
 	{
-		auto window = new ResizableWindow(comp->getName(), true);
+		auto window = heavyWeightFactory(*comp).release();
 		window->setContentNonOwned(comp, true);
 		window->setTopLeftPosition(screenPosition);
 		windows.add(window);
@@ -162,6 +164,19 @@ namespace jcredland
 	{
 		divorceComponentFromParent(dockableComponentWrapper);
 		dockableComponents.removeObject(dockableComponentWrapper);
+	}
+
+	void DockableWindowManager::setHeavyWeightGenerator(HeavyWeightFactory && factory)
+	{
+		heavyWeightFactory = std::move(factory);
+	}
+
+	void DockableWindowManager::resetHeavyWeightFactory()
+	{
+		heavyWeightFactory = [](juce::Component& c)
+		{
+			return std::make_unique<juce::ResizableWindow>(c.getName(), true);
+		};
 	}
 
 	void DockableWindowManager::handleComponentDrag(DockableComponentWrapper * componentBeingDragged, Point<int> location, int w, int h)

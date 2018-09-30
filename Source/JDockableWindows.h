@@ -80,6 +80,9 @@ namespace jcredland
 	class DockableWindowManager
 	{
 	public:
+
+		typedef std::function<std::unique_ptr<juce::ResizableWindow>(juce::Component& child)> HeavyWeightFactory;
+
 		DockableWindowManager();
 
 		class TransparentDragImageWindow : public juce::TopLevelWindow
@@ -147,6 +150,10 @@ namespace jcredland
 		Remove and delete a dockable component wrapper.
 		*/
 		void deleteDockableComponent(DockableComponentWrapper* dockableComponentWrapper);
+
+		void setHeavyWeightGenerator(HeavyWeightFactory&& factory);
+		void resetHeavyWeightFactory();
+
 	private:
 		friend class DockBase;
 		void addDock(DockBase* newDock);
@@ -169,6 +176,7 @@ namespace jcredland
 		juce::ComponentBoundsConstrainer basicConstrainer;
 		DockBase * highlightedDock{ nullptr };
 		juce::Component * currentlyDraggedComponent{ nullptr };
+		HeavyWeightFactory heavyWeightFactory;
 
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableWindowManager)
 	};
