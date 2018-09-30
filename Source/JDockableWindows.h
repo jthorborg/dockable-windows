@@ -154,7 +154,15 @@ namespace jcredland
 		void setHeavyWeightGenerator(HeavyWeightFactory&& factory);
 		void resetHeavyWeightFactory();
 
+		void detachComponentFromDock(juce::Component& comp, juce::Point<int> screenPosition);
+		void attachComponentToDock(juce::Component& comp, DockBase& dock);
+		void setScreenPosition(juce::Component& comp, juce::Point<int> screenPosition);
+
 	private:
+
+		DockableComponentWrapper* findWrapperFor(juce::Component& c);
+		juce::ResizableWindow* findWindowFor(DockableComponentWrapper& dc);
+
 		friend class DockBase;
 		void addDock(DockBase* newDock);
 		void removeDock(DockBase* dockToRemove);
@@ -380,7 +388,7 @@ namespace jcredland
 	*/
 	class TabDock
 		: public juce::Component
-		, DockBase
+		, public DockBase
 	{
 	public:
 		TabDock(DockableWindowManager& manager_);

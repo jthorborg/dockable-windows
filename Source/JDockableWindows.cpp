@@ -43,6 +43,24 @@ namespace jcredland
 		resetHeavyWeightFactory();
 	}
 
+	DockableComponentWrapper* DockableWindowManager::findWrapperFor(juce::Component & c)
+	{
+		for (auto* d : dockableComponents)
+			if (d->getContent() == &c)
+				return d;
+
+		return nullptr;
+	}
+
+	juce::ResizableWindow * DockableWindowManager::findWindowFor(DockableComponentWrapper & dc)
+	{
+		for (auto* w : windows)
+			if (w->getContentComponent() == &dc)
+				return w;
+
+		return nullptr;
+	}
+
 	void DockableWindowManager::addDock(DockBase* newDock)
 	{
 		docks.addIfNotAlreadyThere(newDock);
@@ -61,7 +79,7 @@ namespace jcredland
 
 	void DockableWindowManager::createHeavyWeightWindow(DockableComponentWrapper * comp, const Point<int> &screenPosition)
 	{
-		auto window = heavyWeightFactory(*comp).release();
+		auto window = heavyWeightFactory(*(comp->getContent())).release();
 		window->setContentNonOwned(comp, true);
 		window->setTopLeftPosition(screenPosition);
 		windows.add(window);
@@ -107,6 +125,43 @@ namespace jcredland
 			createHeavyWeightWindow(component, screenPosition);
 
 		currentlyDraggedComponent = nullptr;
+	}
+
+	void DockableWindowManager::detachComponentFromDock(juce::Component& comp, juce::Point<int> screenPosition)
+	{
+		auto* wrapper = findWrapperFor(comp);
+
+		if (!wrapper)
+			throw std::invalid_argument("Component to be detached was never added to this manager");
+
+		divorceComponentFromParent(wrapper);
+		createHeavyWeightWindow(wrapper, screenPosition);
+	}
+
+	void DockableWindowManager::attachComponentToDock(juce::Component& comp, DockBase& targetDock)
+	{
+		auto* wrapper = findWrapperFor(comp);
+
+		if (!wrapper)
+			throw std::invalid_argument("Component to be attached was never added to this manager");
+
+		divorceComponentFromParent(wrapper);
+		targetDock.attachDockableComponent(wrapper, { 0, 0 });
+	}
+
+	void DockableWindowManager::setScreenPosition(juce::Component& comp, juce::Point<int> position)
+	{
+		auto* wrapper = findWrapperFor(comp);
+
+		if (!wrapper)
+			throw std::invalid_argument("Component to be repositioned was never added to this manager");
+
+		auto* w = findWindowFor(*wrapper);
+
+		if (!w)
+			throw std::logic_error("Component to be repositioned is not heavyweight");
+
+		w->setTopLeftPosition(position);
 	}
 
 	DockableComponentWrapper* DockableWindowManager::createDockableComponent(Component* component)
