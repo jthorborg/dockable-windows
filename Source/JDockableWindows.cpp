@@ -35,8 +35,8 @@ namespace jcredland
 
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
-	DockableWindowManager::DockableWindowManager(bool docksShouldHaveTitles)
-		: docksHaveTitles(docksShouldHaveTitles)
+	DockableWindowManager::DockableWindowManager(bool tabsShouldBePlacedAtTop, bool docksShouldHaveTitles)
+		: tabIsTop(tabsShouldBePlacedAtTop), docksHaveTitles(docksShouldHaveTitles)
 	{
 		basicConstrainer.setMinimumWidth(100);
 		basicConstrainer.setMinimumHeight(35);
@@ -167,7 +167,7 @@ namespace jcredland
 
 	DockableComponentWrapper* DockableWindowManager::createDockableComponent(Component* component)
 	{
-		auto d = new DockableComponentWrapper(*this, docksHaveTitles, component);
+		auto d = new DockableComponentWrapper(*this, tabIsTop, docksHaveTitles, component);
 		dockableComponents.add(d);
 		return d;
 	}
@@ -297,8 +297,8 @@ namespace jcredland
 
 	//==============================================================================
 
-	DockableComponentWrapper::DockableComponentWrapper(DockableWindowManager & manager_, bool useTitleBar, Component* contentComponentUnowned)
-		: manager(manager_)
+	DockableComponentWrapper::DockableComponentWrapper(DockableWindowManager & manager_, bool tabsArePlacedAtTop, bool useTitleBar, Component* contentComponentUnowned)
+		: manager(manager_), tabIsTop(tabsArePlacedAtTop)
 	{
 		setInterceptsMouseClicks(false, true);
 
@@ -329,7 +329,7 @@ namespace jcredland
 			if (tabWidthToUse == -1)
 				tabWidthToUse = tabButton->getIdealWidth();
 
-			auto tabArea = area.removeFromBottom(16);
+			auto tabArea = tabIsTop ? area.removeFromTop(20) : area.removeFromBottom(20);
 			tabArea.setX(tabXPosition);
 			tabArea.setWidth(tabWidthToUse);
 			tabButton->setBounds(tabArea);
@@ -406,7 +406,7 @@ namespace jcredland
 		{
 			tabButton = nullptr;
 		}
-
+		
 		resized();
 	}
 
@@ -430,9 +430,9 @@ namespace jcredland
 
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
-	DockableComponentDraggable::DockableComponentDraggable(DockableComponentWrapper& owner_, DockableWindowManager& manager_) :
-		owner(owner_),
-		manager(manager_)
+	DockableComponentDraggable::DockableComponentDraggable(DockableComponentWrapper& owner_, DockableWindowManager& manager_) 
+		: owner(owner_)
+		, manager(manager_)
 	{
 		setMouseCursor(MouseCursor::DraggingHandCursor);
 	}
@@ -461,8 +461,8 @@ namespace jcredland
 
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
-	DockableComponentTitleBar::DockableComponentTitleBar(DockableComponentWrapper& owner_, DockableWindowManager& manager_) :
-		DockableComponentDraggable(owner_, manager_)
+	DockableComponentTitleBar::DockableComponentTitleBar(DockableComponentWrapper& owner_, DockableWindowManager& manager_) 
+		: DockableComponentDraggable(owner_, manager_)
 	{
 	}
 
@@ -482,8 +482,8 @@ namespace jcredland
 
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
-	DockableComponentTab::DockableComponentTab(DockableComponentWrapper& owner_, DockableWindowManager& manager_) :
-		DockableComponentDraggable(owner_, manager_)
+	DockableComponentTab::DockableComponentTab(DockableComponentWrapper& owner_, DockableWindowManager& manager_)
+		: DockableComponentDraggable(owner_, manager_)
 	{
 	}
 
@@ -517,9 +517,8 @@ namespace jcredland
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
 	WindowDockVertical::WindowDockVertical(DockableWindowManager& manager_)
-		:
-		DockBase(manager_, this),
-		manager(manager_)
+		: DockBase(manager_, this)
+		, manager(manager_)
 	{
 	}
 
@@ -649,9 +648,9 @@ namespace jcredland
 
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
-	TabDock::TabDock(DockableWindowManager& manager_) :
-		DockBase(manager_, this),
-		manager(manager_)
+	TabDock::TabDock(DockableWindowManager& manager_) 
+		: DockBase(manager_, this)
+		, manager(manager_)
 	{
 	}
 
@@ -681,7 +680,7 @@ namespace jcredland
 			if (dockedCompWrapper->isVisible())
 			{
 				dockedCompWrapper->setBounds(area);
-				dockedCompWrapper->setShowTabButton(true, x, dockedCompWrapper == lastComponent);
+				dockedCompWrapper->setShowTabButton(true, x, isSelectedTab);
 				x += dockedCompWrapper->getTabWidth() + 2;
 			}
 		}

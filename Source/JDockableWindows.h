@@ -83,7 +83,7 @@ namespace jcredland
 
 		typedef std::function<std::unique_ptr<juce::ResizableWindow>(juce::Component& child)> HeavyWeightFactory;
 
-		DockableWindowManager(bool docksShouldHaveTitles = true);
+		DockableWindowManager(bool tabsAreAtTop = false, bool docksShouldHaveTitles = true);
 
 		class TransparentDragImageWindow : public juce::TopLevelWindow
 		{
@@ -186,6 +186,7 @@ namespace jcredland
 		juce::Component * currentlyDraggedComponent{ nullptr };
 		HeavyWeightFactory heavyWeightFactory;
 		bool docksHaveTitles;
+		bool tabIsTop;
 
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableWindowManager)
 	};
@@ -205,7 +206,7 @@ namespace jcredland
 	{
 	public:
 
-		DockableComponentWrapper(DockableWindowManager &, bool useTitleBar, juce::Component * contentComponentUnowned = nullptr);
+		DockableComponentWrapper(DockableWindowManager &, bool tabsArePlacedAtTop, bool useTitleBar, juce::Component * contentComponentUnowned = nullptr);
 		~DockableComponentWrapper();
 
 		void setContentComponentUnowned(juce::Component* content);
@@ -245,7 +246,7 @@ namespace jcredland
 		DockBase* getCurrentDock() const;
 
 		/**
-		Whether the wrapper should show the tab handle at the bottom.
+		Whether the wrapper should show the tab handle, and where to put it.
 		*/
 		void setShowTabButton(bool shouldShowTab, int xPosition, bool isFront);
 
@@ -267,6 +268,7 @@ namespace jcredland
 
 		juce::WeakReference<Component> contentComponent;
 		DockableWindowManager & manager;
+		bool tabIsTop = false;
 
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableComponentWrapper)
 	};
