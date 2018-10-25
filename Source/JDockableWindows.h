@@ -83,7 +83,7 @@ namespace jcredland
 
 		typedef std::function<std::unique_ptr<juce::ResizableWindow>(juce::Component& child)> HeavyWeightFactory;
 
-		DockableWindowManager();
+		DockableWindowManager(bool docksShouldHaveTitles = true);
 
 		class TransparentDragImageWindow : public juce::TopLevelWindow
 		{
@@ -185,6 +185,7 @@ namespace jcredland
 		DockBase * highlightedDock{ nullptr };
 		juce::Component * currentlyDraggedComponent{ nullptr };
 		HeavyWeightFactory heavyWeightFactory;
+		bool docksHaveTitles;
 
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DockableWindowManager)
 	};
@@ -203,8 +204,8 @@ namespace jcredland
 		, public juce::ComponentListener
 	{
 	public:
-		DockableComponentWrapper(DockableWindowManager &);
-		DockableComponentWrapper(DockableWindowManager &, juce::Component * contentComponentUnowned);
+
+		DockableComponentWrapper(DockableWindowManager &, bool useTitleBar, juce::Component * contentComponentUnowned = nullptr);
 		~DockableComponentWrapper();
 
 		void setContentComponentUnowned(juce::Component* content);

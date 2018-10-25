@@ -35,7 +35,8 @@ namespace jcredland
 
 	//// //// //// //// //// //// //// //// //// //// //// //// //// //// //// //// 
 
-	DockableWindowManager::DockableWindowManager()
+	DockableWindowManager::DockableWindowManager(bool docksShouldHaveTitles)
+		: docksHaveTitles(docksShouldHaveTitles)
 	{
 		basicConstrainer.setMinimumWidth(100);
 		basicConstrainer.setMinimumHeight(35);
@@ -166,7 +167,7 @@ namespace jcredland
 
 	DockableComponentWrapper* DockableWindowManager::createDockableComponent(Component* component)
 	{
-		auto d = new DockableComponentWrapper(*this, component);
+		auto d = new DockableComponentWrapper(*this, docksHaveTitles, component);
 		dockableComponents.add(d);
 		return d;
 	}
@@ -296,24 +297,19 @@ namespace jcredland
 
 	//==============================================================================
 
-	DockableComponentWrapper::DockableComponentWrapper(DockableWindowManager & manager_)
-		:
-		manager(manager_)
+	DockableComponentWrapper::DockableComponentWrapper(DockableWindowManager & manager_, bool useTitleBar, Component* contentComponentUnowned)
+		: manager(manager_)
 	{
 		setInterceptsMouseClicks(false, true);
-		titleBar = new DockableComponentTitleBar(*this, manager);
-		addAndMakeVisible(titleBar);
-	}
 
-	DockableComponentWrapper::DockableComponentWrapper(DockableWindowManager&manager_, Component* contentComponentUnowned)
-		:
-		manager(manager_)
-	{
-		setInterceptsMouseClicks(false, true);
-		titleBar = new DockableComponentTitleBar(*this, manager);
-		addAndMakeVisible(titleBar);
+		if (useTitleBar)
+		{
+			titleBar = new DockableComponentTitleBar(*this, manager);
+			addAndMakeVisible(titleBar);
+		}
 
 		setContentComponentUnowned(contentComponentUnowned);
+
 	}
 
 	DockableComponentWrapper::~DockableComponentWrapper()
@@ -324,7 +320,9 @@ namespace jcredland
 	void DockableComponentWrapper::resized()
 	{
 		auto area = getLocalBounds();
-		titleBar->setBounds(area.removeFromTop(20));
+
+		if(titleBar)
+			titleBar->setBounds(area.removeFromTop(20));
 
 		if (tabButton)
 		{
@@ -370,9 +368,10 @@ namespace jcredland
 		contentComponent = content;
 
 		if (contentComponent)
+		{
 			addAndMakeVisible(contentComponent);
-
-		content->addComponentListener(this);
+			content->addComponentListener(this);
+		}
 
 		resized();
 	}
