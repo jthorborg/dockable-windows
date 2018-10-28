@@ -257,6 +257,8 @@ namespace jcredland
 
 		void componentBeingDeleted(juce::Component&) override;
 
+		void componentNameChanged(juce::Component&) override;
+
 		juce::Component* getContent();
 
 	private:

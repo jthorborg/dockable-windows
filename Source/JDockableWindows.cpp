@@ -423,6 +423,12 @@ namespace jcredland
 		manager.deleteDockableComponent(this);
 	}
 
+	void DockableComponentWrapper::componentNameChanged(Component&)
+	{
+		if (tabButton)
+			tabButton->repaint();
+	}
+
 	juce::Component * DockableComponentWrapper::getContent()
 	{
 		return contentComponent.get();
