@@ -165,6 +165,8 @@ namespace jcredland
 		w->setTopLeftPosition(position);
 	}
 
+	bool DockableWindowManager::getTabsArePlacedAtTop() const { return tabIsTop; }
+
 	DockableComponentWrapper* DockableWindowManager::createDockableComponent(Component* component)
 	{
 		auto d = new DockableComponentWrapper(*this, tabIsTop, docksHaveTitles, component);
@@ -698,7 +700,10 @@ namespace jcredland
 			return;
 
 		g.setColour(Colours::red);
-		g.fillRect(highlightXPosition - 1, getHeight() - tabHeight, 3, tabHeight);
+
+		const auto yPos = manager.getTabsArePlacedAtTop() ? 0 : getHeight() - tabHeight;
+
+		g.fillRect(highlightXPosition - 1, yPos, 3, tabHeight);
 	}
 
 	void TabDock::revealComponent(DockableComponentWrapper* dockableComponent)

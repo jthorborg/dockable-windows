@@ -158,6 +158,8 @@ namespace jcredland
 		void attachComponentToDock(juce::Component& comp, DockBase& dock);
 		void setScreenPosition(juce::Component& comp, juce::Point<int> screenPosition);
 
+		bool getTabsArePlacedAtTop() const;
+
 	private:
 
 		DockableComponentWrapper* findWrapperFor(juce::Component& c);
