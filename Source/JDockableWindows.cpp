@@ -706,6 +706,15 @@ namespace jcredland
 		g.fillRect(highlightXPosition - 1, yPos, 3, tabHeight);
 	}
 
+	bool TabDock::contains(juce::Component & c)
+	{
+		for (auto* w : dockedComponents)
+			if (w->getContent() == &c)
+				return true;
+
+		return false;
+	}
+
 	void TabDock::revealComponent(DockableComponentWrapper* dockableComponent)
 	{
 		if (!dockableComponent)

@@ -402,6 +402,7 @@ namespace jcredland
 		void addComponentToDock(juce::Component* comp);
 		void resized() override;
 		void paintOverChildren(juce::Graphics& g) override;
+		bool contains(juce::Component& c);
 
 	private:
 		struct PlacementPosition
