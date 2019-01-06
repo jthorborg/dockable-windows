@@ -136,6 +136,7 @@ namespace jcredland
 			throw std::invalid_argument("Component to be detached was never added to this manager");
 
 		divorceComponentFromParent(wrapper);
+		wrapper->setShowTabButton(false, 0, false);
 		createHeavyWeightWindow(wrapper, screenPosition);
 	}
 
